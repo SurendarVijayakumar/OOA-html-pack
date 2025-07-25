@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arbitration Persona Simulator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .main-content {
+      padding: 30px;
+    }
+
+    .input-section, .section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      border-left: 5px solid #3498db;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .input-group input, .input-group select {
+      padding: 12px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .simulate-btn {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .simulate-btn:hover {
+      background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .results-section {
+      display: none;
+    }
+
+    .risk-box {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .risk-high {
+      background: #f8d7da;
+      border-color: #f5c6cb;
+    }
+
+    .risk-medium {
+      background: #fff3cd;
+      border-color: #ffeaa7;
+    }
+
+    .risk-low {
+      background: #d4edda;
+      border-color: #c3e6cb;
+    }
+
+    .persona-box, .recommendation-box, .insight-item {
+      background: #e8f4f8;
+      border: 1px solid #bee5eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .metric {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin: 5px 0;
+    }
+
+    .metric.high { background: #e74c3c; }
+    .metric.medium { background: #f39c12; }
+    .metric.low { background: #27ae60; }
+
+    .reference-links a {
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin: 5px 10px 5px 0;
+      text-decoration: none;
+    }
+
+    .tip-box {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🤖 GenAI Arbitration Persona Simulator</h1>
+      <p>Strategic Negotiation Preparation for Out-of-Network Dispute Resolution</p>
+    </div>
+
+    <div class="main-content">
+      <div class="input-section">
+        <h2>Case Input</h2>
+        <div class="input-grid">
+          <div class="input-group">
+            <label for="claimAmount">Claim Amount ($)</label>
+            <input type="number" id="claimAmount" value="15000" />
+          </div>
+          <div class="input-group">
+            <label for="cptCode">CPT Code</label>
+            <input type="text" id="cptCode" value="99213" />
+          </div>
+          <div class="input-group">
+            <label for="providerType">Provider Type</label>
+            <select id="providerType">
+              <option value="hospital">Hospital</option>
+              <option value="specialist" selected>Specialist</option>
+              <option value="primary">Primary Care</option>
+              <option value="emergency">Emergency Medicine</option>
+              <option value="surgical">Surgical</option>
+            </select>
+          </div>
+        </div>
+        <button class="simulate-btn" onclick="runSimulation()">🚀 Run Simulation</button>
+        <button class="simulate-btn" style="background:#007bff;margin-left:10px;" onclick="downloadPDF()">📥 Download Report</button>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing case data and generating persona predictions...</p>
+      </div>
+
+      <div class="results-section" id="results">
+        <div class="section">
+          <h2>1. Risk Assessment</h2>
+          <div class="risk-box" id="riskBox">
+            <h3>📊 Likelihood of Acceptance: <span id="acceptanceRate">34%</span></h3>
+            <p><strong>Arbitrator Lean:</strong> <span id="arbitratorLean">Likely to side with provider due to CPT precedent</span></p>
+            <p><strong>Escalation Risk:</strong> <span class="metric high" id="escalationRisk">High</span></p>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>2. Persona Simulation</h2>
+          <div class="persona-box">
+            <strong>🏛 Arbitrator Persona:</strong>
+            <p id="arbitratorPersona">Data-precedent driven, risk-averse</p>
+          </div>
+          <div class="persona-box">
+            <strong>🏥 Provider Persona:</strong>
+            <p id="providerPersona">Aggressive negotiator expecting premium rates</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>3. Strategic Recommendation</h2>
+          <div class="recommendation-box">
+            <strong>💬 Rebuttal Script:</strong>
+            <p id="rebuttalScript">“We propose a revised offer of $510 aligning with Medicare benchmarks. Let’s avoid IDR.”</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>4. CMS Insights</h2>
+          <div class="insight-item">
+            <h4>🧠 Insight:</h4>
+            <p>CMS arbitrators prefer data-backed justifications with CPT/Medicare logic.</p>
+          </div>
+          <div class="reference-links">
+            <a href="https://www.cms.gov/cciio/resources/regulations-and-guidance/downloads/technical-guidance-arbitration.pdf" target="_blank">📄 CMS Technical Guidance</a>
+            <a href="https://www.cms.gov/nosurprises" target="_blank">🏛 No Surprises Act Portal</a>
+          </div>
+          <div class="tip-box">
+            <p><strong>💡 Tip:</strong> Use precedent case language in rebuttals.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function runSimulation() {
+      const amount = parseInt(document.getElementById('claimAmount').value);
+      const provider = document.getElementById('providerType').value;
+
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+
+      setTimeout(() => {
+        let risk = 'medium';
+        let accept = 34;
+
+        if (amount < 5000) { accept += 15; risk = 'low'; }
+        else if (amount > 30000) { accept -= 10; risk = 'high'; }
+
+        document.getElementById('acceptanceRate').textContent = accept + '%';
+        document.getElementById('escalationRisk').textContent = risk.charAt(0).toUpperCase() + risk.slice(1);
+        document.getElementById('escalationRisk').className = 'metric ' + risk;
+        document.getElementById('riskBox').className = 'risk-box risk-' + risk;
+
+        if (provider === 'emergency') {
+          document.getElementById('arbitratorPersona').textContent = 'Focuses on urgency and risk mitigation';
+          document.getElementById('providerPersona').textContent = 'High urgency expectation, defensive tone';
+        } else if (provider === 'specialist') {
+          document.getElementById('arbitratorPersona').textContent = 'Appreciates specialty detail and credentialing';
+          document.getElementById('providerPersona').textContent = 'Values peer-reviewed justifications and fair rate comparison';
+        } else {
+          document.getElementById('arbitratorPersona').textContent = 'Data-precedent driven, cost-aware';
+          document.getElementById('providerPersona').textContent = 'Neutral stance; willing to accept fair offer';
+        }
+
+        const offer = Math.round(amount * (accept / 100));
+        document.getElementById('rebuttalScript').textContent =
+          `“Considering IDR trends, we propose a revised offer of $${offer.toLocaleString()} aligning with Medicare benchmarks. Let’s avoid escalation.”`;
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+      }, 1500);
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text('GenAI Arbitration Persona Report', 10, 10);
+      doc.text('Claim Amount: $' + document.getElementById('claimAmount').value, 10, 20);
+      doc.text('Provider Type: ' + document.getElementById('providerType').value, 10, 30);
+      doc.text('Acceptance Rate: ' + document.getElementById('acceptanceRate').textContent, 10, 40);
+      doc.text('Arbitrator Lean: ' + document.getElementById('arbitratorLean').textContent, 10, 50);
+      doc.text('Escalation Risk: ' + document.getElementById('escalationRisk').textContent, 10, 60);
+      doc.text('Arbitrator Persona: ' + document.getElementById('arbitratorPersona').textContent, 10, 70);
+      doc.text('Provider Persona: ' + document.getElementById('providerPersona').textContent, 10, 80);
+      doc.text('Recommendation: ' + document.getElementById('rebuttalScript').textContent, 10, 90);
+      doc.save('GenAI_Dispute_Report.pdf');
+    }
+  </script>
+</body>
+</html>
+
